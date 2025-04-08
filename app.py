@@ -33,8 +33,8 @@ async def get_all_status():
         if not device_status_dict:
             return {"message": "No devices found"}
 
-        # Sắp xếp các card: đưa những card không phải "running" lên trên
-        sorted_devices = sorted(device_status_dict.items(), key=lambda x: x[1]["status"] == "running", reverse=True)
+        # Sắp xếp các device: đưa những card không phải "running" lên trên
+        sorted_devices = sorted(device_status_dict.items(), key=lambda x: x[1]["status"] == "running", reverse=False)
 
         # Chuyển đổi lại thành dictionary sau khi sắp xếp
         sorted_device_dict = {pcname: status for pcname, status in sorted_devices}
