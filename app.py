@@ -24,6 +24,9 @@ def create_table():
     conn.commit()
     conn.close()
 
+# Gọi hàm tạo bảng khi ứng dụng khởi động
+create_table()
+
 # Lưu trạng thái vào cơ sở dữ liệu
 def save_to_db(status: DeviceStatus):
     conn = connect_db()
