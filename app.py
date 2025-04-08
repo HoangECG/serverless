@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import json
-import os
+import sqlite3
 
 app = FastAPI()
 
@@ -11,45 +10,42 @@ class DeviceStatus(BaseModel):
     status: str
     errs: int
 
-json_file_path = "device_status.json"
+# Kết nối đến cơ sở dữ liệu SQLite
+def connect_db():
+    conn = sqlite3.connect("device_status.db")
+    return conn
 
-def load_data():
-    try:
-        if os.path.exists(json_file_path):
-            with open(json_file_path, "r") as f:
-                return json.load(f)
-        else:
-            return []  # Trả về danh sách trống nếu file không tồn tại
-    except Exception as e:
-        print(f"Error loading data from {json_file_path}: {e}")
-        return []
+# Tạo bảng trong database nếu chưa có
+def create_table():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS devices 
+                    (pcname TEXT PRIMARY KEY, program TEXT, status TEXT, errs INTEGER)''')
+    conn.commit()
+    conn.close()
 
-def save_to_json(data):
-    try:
-        with open(json_file_path, "w") as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        print(f"Error saving data to {json_file_path}: {e}")
+# Lưu trạng thái vào cơ sở dữ liệu
+def save_to_db(status: DeviceStatus):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('''INSERT OR REPLACE INTO devices (pcname, program, status, errs) 
+                      VALUES (?, ?, ?, ?)''', (status.pcname, status.program, status.status, status.errs))
+    conn.commit()
+    conn.close()
+
+# Lấy tất cả dữ liệu từ cơ sở dữ liệu
+def load_from_db():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM devices')
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
 
 @app.post("/status/")
 async def update_status(status: DeviceStatus):
-    print(f"Received data: {status.dict()}")  # Debug log
-
     try:
-        existing_data = load_data()
-
-        device_exists = False
-        for device in existing_data:
-            if device["pcname"] == status.pcname:
-                device["status"] = status.status
-                device["errs"] = status.errs
-                device_exists = True
-                break
-
-        if not device_exists:
-            existing_data.append(status.dict())
-
-        save_to_json(existing_data)
+        save_to_db(status)
         return {"message": "Status updated successfully!"}
     except Exception as e:
         print(f"Error in update_status: {e}")
@@ -58,8 +54,8 @@ async def update_status(status: DeviceStatus):
 @app.get("/status/")
 async def get_all_status():
     try:
-        existing_data = load_data()
-        return {"devices": existing_data}
+        devices = load_from_db()
+        return {"devices": devices}
     except Exception as e:
         print(f"Error in get_all_status: {e}")
         return {"error": "Failed to retrieve status"}
