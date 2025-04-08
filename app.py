@@ -1,8 +1,14 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # hoặc chỉ domain ông muốn
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Sử dụng dictionary để lưu trạng thái
 device_status_dict = {}
 
