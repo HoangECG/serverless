@@ -12,7 +12,7 @@ class DeviceStatus(BaseModel):
     status: str
     errs: int
 
-@app.post("/status/")
+@app.post("/api/")
 async def update_status(status: DeviceStatus):
     try:
         # Lưu trạng thái vào dictionary
@@ -26,7 +26,7 @@ async def update_status(status: DeviceStatus):
         print(f"Error in update_status: {e}")
         return {"error": "Failed to update status"}
 
-@app.get("/status/")
+@app.get("/api/")
 async def get_all_status():
     try:
         # Trả về tất cả trạng thái từ dictionary
