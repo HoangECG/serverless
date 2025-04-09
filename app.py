@@ -38,7 +38,18 @@ async def get_all_status():
         # Trả về tất cả trạng thái từ dictionary
         if not device_status_dict:
             return {"message": "No devices found"}
-        return {"devices": device_status_dict}
+
+        # Sắp xếp các device: đưa những card không phải "running" lên trên
+        sorted_devices = sorted(device_status_dict.items(), key=lambda x: x[1]["status"] == "running", reverse=False)
+
+        # Chuyển đổi lại thành dictionary sau khi sắp xếp
+        sorted_device_dict = {pcname: status for pcname, status in sorted_devices}
+
+        return {"devices": sorted_device_dict}
     except Exception as e:
         print(f"Error in get_all_status: {e}")
         return {"error": f"Failed to retrieve status: {e}"}
+@app.get("/api/cls")
+async def get_clear():
+    device_status_dict = {}
+    return {"error": f"Clear Done"}
