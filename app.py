@@ -49,10 +49,16 @@ async def get_all_status():
     except Exception as e:
         print(f"Error in get_all_status: {e}")
         return {"error": f"Failed to retrieve status: {e}"}
+@app.get("/api/{pcname}")
+async def get_device_status(pcname: str):
+    status = device_status_dict.get(pcname)
+    if status:
+        return {pcname: status}
+    return {"message": "Device not found"}
 @app.get("/api/cls")
 async def get_clear():
-    device_status_dict = {}
-    return {"error": f"Clear Done"}
+    device_status_dict.clear()
+    return {"message": f"Clear Done"}
 @app.head("/ping")
 def ping_head():
     return Response(status_code=200)
