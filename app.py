@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Response
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
@@ -53,3 +53,6 @@ async def get_all_status():
 async def get_clear():
     device_status_dict = {}
     return {"error": f"Clear Done"}
+@app.head("/ping")
+def ping_head():
+    return Response(status_code=200)
